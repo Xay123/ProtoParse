@@ -54,6 +54,25 @@
           flex-wrap: wrap;
           justify-content: center;
         }
+
+        #rawTextBox {
+          width: 100%;
+          min-height: 200px;
+          max-height: 1000px;
+          margin-top: 20px;
+          padding: 10px;
+          border: 2px solid #ccc;
+          border-radius: 5px;
+          background-color: #f2f2f2;
+          color: #333;
+          font-family: Arial, sans-serif;
+          font-size: 1rem;
+          resize: none;
+          overflow-y: auto;
+          transition: background-color 0.3s ease, color 0.3 ease;
+        }
+
+
         .item {
           display: flex;
           flex-direction: column;
@@ -86,6 +105,10 @@
         }
         .dark-mode .item {
           background-color: #444;
+        }
+        .dark-mode #rawTextBox {
+          background-color: #444;
+          color: #fff;
         }
         .transition {
           transition: background-color 0.3s ease, color 0.3s ease;
@@ -149,7 +172,7 @@
                 };
               }
             } else {
-              const regex = new RegExp(`${item.id}((?:-\\w+){${item.searchDepth}})`, 'g');
+              const regex = new RegExp(`${item.id}((?:-[\\w\\/\\.]+){${item.searchDepth}})`, 'g');
               const matches = fileContents.match(regex);
               if (matches && matches.length > 0) {
                 counts[item.name] = {};
@@ -169,7 +192,9 @@
 
       function displayCounts(counts) {
         const countsContainer = document.getElementById('countsContainer');
+        const rawTextBox = document.getElementById('rawTextBox');
         countsContainer.innerHTML = '';
+        rawTextBox.value = '';
 
         for (const item in counts) {
           const itemContainer = document.createElement('div');
@@ -184,9 +209,13 @@
             valueElement.classList.add('value');
             valueElement.textContent = value === '' ? `(${count})` : `${value} (${count})`;
             itemContainer.appendChild(valueElement);
+
+            // Append to raw text box
+            rawTextBox.value += `${item} ${value}: ${count}\n`;
           }
         }
       }
+
       function toggleDarkMode() {
         const body = document.querySelector('body');
         body.classList.toggle('dark-mode');
@@ -212,10 +241,23 @@
         <button id="toggleButton" onclick="toggleDarkMode()">Toggle Dark Mode</button>
     </div>
 
-    <input type="file" id="fileInput"/>
+    <input type="file" id="fileInput" accept=".pbb" />
+
+    <div id="countsContainer"></div>
+    <textarea id="rawTextBox" readonly></textarea>
+
     <div id="countsContainer"></div>
     <script>
       document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+      function adjustRawTextBoxHeight() {
+        const rawTextBox = document.getElementById('rawTextBox');
+        rawTextBox.style.height = 'auto';
+        rawTextBox.style.height = rawTextBox.scrollHeight + 'px';
+      }
+
+      // Call the adjustRawTextBoxHeight function whenever the content of the text box changes
+      document.getElementById('rawTextBox').addEventListener('input', adjustRawTextBoxHeight);
+
     </script>
   </body>
 </html>
