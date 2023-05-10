@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>File Upload and Content Parsing</title>
+    <style>
+        * {
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
+        }
+        body {
+          margin: 0;
+          padding: 20px;
+          background-color: #f2f2f2;
+        }
+        h1 {
+          text-align: center;
+          margin-top: 0;
+        }
+        #fileInput {
+          display: block;
+          margin: 0 auto 20px;
+        }
+        #countsContainer {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin: 10px;
+          padding: 10px;
+          background-color: #fff;
+          border-radius: 5px;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        .item-name {
+          font-size: 1.2rem;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .value {
+          font-size: 1rem;
+          text-align: center;
+          margin-bottom: 5px;
+        }
+        .value-count {
+          font-weight: bold;
+          margin-left: 5px;
+        }
+      </style>
+    <script>
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+          const fileContents = event.target.result;
+          const itemsToCount = [
+            { id: 'BTRY', name: 'Battery', searchDepth: 0 },
+            { id: 'BTCL', name: 'Battery Clip', searchDepth: 0 },
+            { id: 'BRAN', name: 'Brain', searchDepth: 0 },
+            { id: 'MOTR', name: 'Motor', searchDepth: 0 },
+            { id: 'RDIO', name: 'Radio', searchDepth: 0 },
+            { id: 'BLCK', name: 'Block Bearing', searchDepth: 0 },
+            { id: 'BRNG', name: 'Flat Bearing', searchDepth: 1 },
+            { id: 'GEAR', name: 'Gear', searchDepth: 2 },
+            { id: 'SPKT', name: 'Sprocket', searchDepth: 2 },
+            { id: 'LKBR', name: 'Lock Bar', searchDepth: 1 },
+            { id: 'SHFT', name: 'Shaft', searchDepth: 2},
+            { id: 'CLMP', name: 'Shaft Collar', searchDepth: 2  },
+            { id: 'SPCR', name: 'Spacer', searchDepth: 2  },
+            { id: 'WSHR', name: 'Washer', searchDepth: 1  },
+            { id: 'FWHL', name: 'Flex Wheel', searchDepth: 2  },
+            { id: 'MECN', name: 'Mecanum Wheel', searchDepth: 0  },
+            { id: 'OMNI', name: 'Omni Wheel', searchDepth: 1  },
+            { id: 'TWHL', name: 'Traction Wheel', searchDepth: 1  },
+            { id: 'ANGL', name: 'Angle', searchDepth: 2  },
+            { id: 'BSPT', name: 'Baseplate', searchDepth: 0  },
+            { id: 'CCHL', name: 'C-Channel', searchDepth: 2  },
+            { id: 'GSET', name: 'Gusset', searchDepth: 2  },
+            { id: 'NUT', name: 'Nut', searchDepth: 1  },
+            { id: 'PLTE', name: 'Plate', searchDepth: 2  },
+            { id: 'RAIL', name: 'Rail', searchDepth: 1  },
+            { id: 'SCRW', name: 'Screw', searchDepth: 1  },
+            { id: 'SNDF', name: 'Standoff', searchDepth: 1  },
+            { id: 'UCHL', name: 'U-Channel', searchDepth: 2  },
+            { id: 'Potentiometer', name: 'Potentiometer', searchDepth: 0  },
+            { id: 'Distance', name: 'Distance', searchDepth: 0  },
+            { id: 'Rotation', name: 'Rotation', searchDepth: 0  },
+            { id: 'Optical', name: 'Optical', searchDepth: 0  },
+            { id: 'Vision', name: 'Vision', searchDepth: 0  },
+            { id: 'Inertial', name: 'Inertial', searchDepth: 0  },
+            { id: 'Line Tracker', name: 'Line Tracker', searchDepth: 0  },
+            { id: 'Bumper', name: 'Bumper', searchDepth: 0  },
+            { id: 'Limit', name: 'Limit', searchDepth: 0  },
+          ]; // List of items to count with assigned names
+
+          const counts = {};
+          for (const item of itemsToCount) {
+            if (item.searchDepth === 0) {
+              const regex = new RegExp(`${item.id}`, 'g');
+              const matches = fileContents.match(regex);
+              if (matches && matches.length > 0) {
+                counts[item.name] = {
+                  '': matches.length,
+                };
+              }
+            } else {
+              const regex = new RegExp(`${item.id}((?:-\\w+){${item.searchDepth}})`, 'g');
+              const matches = fileContents.match(regex);
+              if (matches && matches.length > 0) {
+                counts[item.name] = {};
+                for (const match of matches) {
+                  const value = match.split('-').slice(1).join('-');
+                  counts[item.name][value] = (counts[item.name][value] || 0) + 1;
+                }
+              }
+            }
+          }
+
+          displayCounts(counts);
+        };
+
+        reader.readAsText(file);
+      }
+
+      function displayCounts(counts) {
+        const countsContainer = document.getElementById('countsContainer');
+        countsContainer.innerHTML = '';
+
+        for (const item in counts) {
+          const itemContainer = document.createElement('div');
+          itemContainer.classList.add('item');
+          itemContainer.textContent = item;
+          countsContainer.appendChild(itemContainer);
+
+          const itemCounts = counts[item];
+          for (const value in itemCounts) {
+            const count = itemCounts[value];
+            const valueElement = document.createElement('div');
+            valueElement.classList.add('value');
+            valueElement.textContent = value === '' ? `(${count})` : `${value} (${count})`;
+            itemContainer.appendChild(valueElement);
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <input type="file" id="fileInput"/>
+    <div id="countsContainer"></div>
+    <script>
+      document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+    </script>
+  </body>
+</html>
