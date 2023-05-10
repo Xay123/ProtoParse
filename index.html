@@ -4,22 +4,51 @@
     <title>File Upload and Content Parsing</title>
     <style>
         * {
-          box-sizing: border-box;
-          font-family: Arial, sans-serif;
-        }
-        body {
-          margin: 0;
-          padding: 20px;
-          background-color: #f2f2f2;
-        }
-        h1 {
-          text-align: center;
-          margin-top: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 20px;
+        background-color: #f2f2f2;
+        color: #333;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      #header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      #header h1 {
+        text-align: center;
+        margin: 0;
+      }
+      #toggleButton {
+        background-color: #ccc;
+        color: #333;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
         }
         #fileInput {
-          display: block;
-          margin: 0 auto 20px;
+            display: block;
+            margin: 0 auto 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background-color: #ccc;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
         }
+
+        #fileInput:hover {
+            border-color: #999;
+        }
+
         #countsContainer {
           display: flex;
           flex-wrap: wrap;
@@ -34,6 +63,7 @@
           background-color: #fff;
           border-radius: 5px;
           box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+          transition: background-color 0.3s ease;
         }
         .item-name {
           font-size: 1.2rem;
@@ -49,6 +79,16 @@
         .value-count {
           font-weight: bold;
           margin-left: 5px;
+        }
+        .dark-mode {
+          background-color: #333;
+          color: #fff;
+        }
+        .dark-mode .item {
+          background-color: #444;
+        }
+        .transition {
+          transition: background-color 0.3s ease, color 0.3s ease;
         }
       </style>
     <script>
@@ -147,9 +187,31 @@
           }
         }
       }
+      function toggleDarkMode() {
+        const body = document.querySelector('body');
+        body.classList.toggle('dark-mode');
+        body.classList.add('transition');
+        setTimeout(() => {
+        body.classList.remove('transition');
+        }, 300);
+    }
+    function checkSystemColorScheme() {
+        const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDarkMode) {
+          document.body.classList.add('dark-mode');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', checkSystemColorScheme);
+      document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
     </script>
   </head>
   <body>
+    <div id="header">
+        <h1>ProtoBot Parts List</h1>
+        <button id="toggleButton" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    </div>
+
     <input type="file" id="fileInput"/>
     <div id="countsContainer"></div>
     <script>
